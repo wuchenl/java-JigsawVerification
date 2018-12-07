@@ -80,12 +80,12 @@ public class CaptchaUtils {
     /**
      * 创建图片到临时目录， 并返回图片的文件名称
      *
-     * @param request
-     * @param havingfilename
+     * @param currentId
      * @return
      * @throws IOException
      */
-    public Map<String, String> create(HttpServletRequest request, String havingfilename) throws IOException {
+    public Map<String, String> create(String currentId) throws IOException {
+
         log.info("readPath:{}", sourceImgPath);
         //本地原始图片路径,
         File file = new File(sourceImgPath);
@@ -99,7 +99,7 @@ public class CaptchaUtils {
         while (true) {
             int randowval = RandomUtils.nextInt(list.length);
             filename = list[randowval];
-            if (!filename.equals(havingfilename)) {
+            if (!filename.equals("")) {
                 break;
             }
         }
@@ -108,7 +108,7 @@ public class CaptchaUtils {
         Map<String, String> result = createImg(sourceFile, filename);
 
         // 获取当前访问的ip，
-        String host = UtilWeb.getIpAddr((HttpServletRequest) request);
+        String host = currentId;
         // 拼接放入redis的key
         host = UtilString.join(host, CaptchaConst.MIDDLE_LINE, CaptchaConst.CAPTCHA);
         //将x 轴位置作为验证码 放入到redis中，key为IP-captcha

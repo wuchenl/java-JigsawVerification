@@ -72,14 +72,16 @@ public class CaptchaRestController {
     @ResponseBody
     public String captchaImage(HttpServletRequest request) throws IOException {
         CaptchaUtils.init(request.getServletContext());
-        String imgname = request.getParameter("imgname");
+//        String imgname = request.getParameter("imgname");
         // 分解出文件名
-        if (!StringUtils.isEmpty(imgname)) {
-            imgname = imgname.substring(imgname.lastIndexOf("/") + 1, imgname.lastIndexOf("png") + 3);
-        }
+//        if (!StringUtils.isEmpty(imgname)) {
+//            imgname = imgname.substring(imgname.lastIndexOf("/") + 1, imgname.lastIndexOf("png") + 3);
+//        }
         CaptchaUtils resourImg = new CaptchaUtils();
+
+        String currentId=UtilWeb.getIpAddr(request);
         // 读取文件
-        Map<String, String> result = resourImg.create(request, imgname);
+        Map<String, String> result = resourImg.create(currentId);
         if (result.size() > 0) {
             return JSON.toJSONString(result);
         } else {
