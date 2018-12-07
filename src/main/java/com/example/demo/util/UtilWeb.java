@@ -106,7 +106,6 @@ public class UtilWeb {
 				sb.append(buff, 0, len);
 			}
 		} catch (IOException e) {
-			//e.printStackTrace();
 			logger.error(e.getMessage());
 		}finally{
 			try {

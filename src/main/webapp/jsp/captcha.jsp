@@ -96,18 +96,17 @@
         $("#yzm_image_source").css("display", "none");
         $(".yzm_image_cut_big").css("display", "none");
         $(".yzm_image_cut_loading").show();
-        console.log( "/yzmServlet?imgname=" + $(".yzm_image_source").css("background-image"));
         $.ajax({
             type: "POST",
             async: true,
-            url: "/yzmServlet?imgname=" + $(".yzm_image_source").css("background-image"),
+            url: "captcha/captchaImage?imgname=" + $(".yzm_image_source").css("background-image"),
             dataType: 'json',
             success: function (result) {
                 if (result) {
                     //设置大图，小图，及其位置
-                    $(".yzm_image_source").css("background-image", "url(sourceYzmImg/" + result.sourceImgName + ")");
-                    $(".yzm_image_cut_big").css("background-image", "url(tempYzmImg/" + result.bigImgName + ")");
-                    $("#xy_img").css("background-image", "url(tempYzmImg/" + result.smallImgName + ")");
+                    $(".yzm_image_source").css("background-image", "url(captcha/image/" + result.sourceImgName + ")");
+                    $(".yzm_image_cut_big").css("background-image", "url(captcha/image/" + result.bigImgName + ")");
+                    $("#xy_img").css("background-image", "url(captcha/image/" + result.smallImgName + ")");
                     $("#xy_img").css("top", Number(result.location_y) + "px");
                     $(".yzm_image_cut_loading").css("display", "none");
                     $(".yzm_image_source").show();
@@ -117,7 +116,7 @@
                 }
             },
             error: function (errormsg) {
-                $.ligerDialog.warn("获取图形验证码失败！");
+                $.ligerDialog.error("获取图形验证码失败！");
             }
         });
     }

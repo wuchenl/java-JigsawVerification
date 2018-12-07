@@ -25,7 +25,7 @@ import java.util.Objects;
  * @author wuchen
  * @version 0.1
  * @date 2018/9/1 15:54
- * @use
+ * @use 滑动验证码rest接口
  */
 @RestController
 @RequestMapping("captcha")

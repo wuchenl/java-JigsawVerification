@@ -8,7 +8,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
  * @author wuchen
  * @version 0.1
  * @date 2018/9/1 15:50
- * @use
+ * @use 访问滑动验证码相关页面
  */
 @Controller
 public class CaptchaController {
