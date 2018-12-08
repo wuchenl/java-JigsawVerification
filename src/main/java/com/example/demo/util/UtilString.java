@@ -14,7 +14,7 @@ import java.util.regex.Pattern;
 /**
  * UtilString
  * 
- * @author zoubin02
+ * @author wuchenl
  */
 
 public class UtilString extends org.apache.commons.lang3.StringUtils {

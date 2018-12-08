@@ -15,6 +15,6 @@ public class CaptchaController {
 
     @GetMapping("/captcha")
     public String login(){
-        return "captcha";
+        return "login";
     }
 }
