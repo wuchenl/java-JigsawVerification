@@ -9,6 +9,8 @@ import org.slf4j.LoggerFactory;
 import org.springframework.cache.Cache;
 import org.springframework.stereotype.Service;
 
+import java.util.UUID;
+
 /**
  * @author itw_wangjb03
  * @date 2018/5/4
@@ -70,7 +72,7 @@ public class AutzQueryServiceImpl implements AutzQueryService {
     public String putCurrentIpCode(String host) {
         String veriCode="";
         if (UtilString.isNotEmpty(host)){
-            String code= "";
+            String code= UUID.randomUUID().toString().replaceAll("-","").substring(0,6);
 //            String code= VerificationCodeUtils.getRandomCode();
             CacheManagerHolder.getManager().getCache(CaptchaConst.VERIFICATION_CODE).put(host, code);
             veriCode=code;
