@@ -72,7 +72,7 @@ body {
     margin: 0 !important;
     border: 0px;
     padding: 0 !important;
-    background-image: url("../sourceYzmImg/5.png");
+    background-image: url("../img/source/0.png");
 }
 
 .yzm_image_source:before {
@@ -113,7 +113,7 @@ body {
     margin: 0 !important;
     border: 0px;
     padding: 0 !important;
-    background-image: url("../static/img/loading.png");
+    background-image: url("../img/loading.png");
 }
 
 #xy_img {

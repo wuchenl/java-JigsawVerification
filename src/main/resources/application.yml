@@ -1,0 +1,16 @@
+server:
+  port: 8080
+  servlet:
+    context-path: /captcha
+spring:
+  mvc:
+    view:
+      prefix: /jsp/
+      suffix: .jsp
+com:
+  letters7:
+    wuchen:
+      captcha:
+        source:
+          path: static/img/source/
+          size: 5

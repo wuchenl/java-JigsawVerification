@@ -52,13 +52,13 @@
             console.log(_x);
             $.ajax({
                 type: "POST",
-                url: "/checkServlet",
+                url: "captcha/checkCaptcha",
                 dataType: "JSON",
                 async: false,
                 data: {point: _x},
                 success: function (result) {
                     console.log(result);
-                    if (result == "success") {
+                    if (result.code == 200) {
                         dragOk(_x);
                     } else {
                         dragErr();

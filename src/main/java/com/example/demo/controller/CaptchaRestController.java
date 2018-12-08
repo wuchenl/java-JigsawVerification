@@ -3,10 +3,10 @@ package com.example.demo.controller;
 import com.alibaba.fastjson.JSON;
 import com.example.demo.model.ResponseMessage;
 import com.example.demo.service.AutzQueryService;
-import com.example.demo.util.CaptchaUtils;
+import com.example.demo.support.CaptchaConfig;
+import com.example.demo.util.CaptchaUtil;
 import com.example.demo.util.UtilString;
 import com.example.demo.util.UtilWeb;
-import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -38,6 +38,8 @@ public class CaptchaRestController {
     @Autowired
     private AutzQueryService autzQueryService;
 
+    @Autowired(required = false)
+    private CaptchaConfig captchaConfig;
     /**
      * 判断是否验证成功
      *
@@ -71,17 +73,17 @@ public class CaptchaRestController {
     @PostMapping("/captchaImage")
     @ResponseBody
     public String captchaImage(HttpServletRequest request) throws IOException {
-        CaptchaUtils.init(request.getServletContext());
 //        String imgname = request.getParameter("imgname");
         // 分解出文件名
 //        if (!StringUtils.isEmpty(imgname)) {
 //            imgname = imgname.substring(imgname.lastIndexOf("/") + 1, imgname.lastIndexOf("png") + 3);
 //        }
-        CaptchaUtils resourImg = new CaptchaUtils();
-
+//        CaptchaUtils resourImg = new CaptchaUtils();
+        CaptchaUtil resUtil=new CaptchaUtil();
         String currentId=UtilWeb.getIpAddr(request);
         // 读取文件
-        Map<String, String> result = resourImg.create(currentId);
+//        Map<String, String> result = resourImg.create(currentId);
+        Map<String, String> result = resUtil.createCaptchaImage(currentId,captchaConfig.getSize(),captchaConfig.getPath());
         if (result.size() > 0) {
             return JSON.toJSONString(result);
         } else {
@@ -103,7 +105,7 @@ public class CaptchaRestController {
                 String base64Str = autzQueryService.getCaptchaImageBase64Str(imageName);
                 if (UtilString.isNotEmpty(base64Str)) {
                     // 有的话则转为图片的输入流，并写出去
-                    InputStream inputStreamFromBase64Str = CaptchaUtils.getInputStreamFromBase64Str(base64Str);
+                    InputStream inputStreamFromBase64Str = CaptchaUtil.getInputStreamFromBase64Str(base64Str);
                     if (Objects.nonNull(inputStreamFromBase64Str)) {
                         BufferedImage bufferedImage = ImageIO.read(inputStreamFromBase64Str);
                         ImageIO.write(bufferedImage, "png", response.getOutputStream());
