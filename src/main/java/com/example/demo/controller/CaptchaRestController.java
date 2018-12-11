@@ -30,10 +30,16 @@ import java.util.Objects;
 @RestController
 @RequestMapping("captcha")
 public class CaptchaRestController {
+
+    /**
+     * 偏移量区间
+     */
+    public static final int OFFSET=4;
     /**
      * 日志提供器
+     * Modifiers should be declared in the correct order
      */
-    private final static Logger log = LoggerFactory.getLogger(CaptchaRestController.class);
+    private static final  Logger log = LoggerFactory.getLogger(CaptchaRestController.class);
 
     @Autowired
     private AutzQueryService autzQueryService;
@@ -51,7 +57,7 @@ public class CaptchaRestController {
         String point = request.getParameter("point");
         String host = UtilWeb.getIpAddr(request);
         Integer veriCode = autzQueryService.getCurrentIdCaptcha(host);
-        if ((Integer.valueOf(point) < veriCode + 4) && (Integer.valueOf(point) > veriCode - 4)) {
+        if ((Integer.valueOf(point) < veriCode + OFFSET) && (Integer.valueOf(point) > veriCode - OFFSET)) {
             // 验证通过后，生成一个验证码放入缓存并返回给前台
             String code = autzQueryService.putCurrentIpCode(host);
             //说明验证通过
@@ -73,16 +79,9 @@ public class CaptchaRestController {
     @PostMapping("/captchaImage")
     @ResponseBody
     public String captchaImage(HttpServletRequest request) throws IOException {
-//        String imgname = request.getParameter("imgname");
-        // 分解出文件名
-//        if (!StringUtils.isEmpty(imgname)) {
-//            imgname = imgname.substring(imgname.lastIndexOf("/") + 1, imgname.lastIndexOf("png") + 3);
-//        }
-//        CaptchaUtils resourImg = new CaptchaUtils();
         CaptchaUtil resUtil=new CaptchaUtil();
         String currentId=UtilWeb.getIpAddr(request);
         // 读取文件
-//        Map<String, String> result = resourImg.create(currentId);
         Map<String, String> result = resUtil.createCaptchaImage(currentId,captchaConfig.getSize(),captchaConfig.getPath());
         if (result.size() > 0) {
             return JSON.toJSONString(result);

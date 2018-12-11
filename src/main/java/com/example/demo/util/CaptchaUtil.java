@@ -1,8 +1,6 @@
 package com.example.demo.util;
 
-import com.example.demo.support.CaptchaConfig;
 import com.example.demo.support.CaptchaConst;
-import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.codec.digest.DigestUtils;
@@ -10,7 +8,6 @@ import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.math.RandomUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 
 import javax.imageio.ImageIO;
 import javax.imageio.ImageReadParam;
@@ -112,7 +109,7 @@ public class CaptchaUtil {
 
         //创建shape区域
         List<Shape> shapes = createSmallShape();
-        if (shapes == null || shapes.size() <= 0) {
+        if (shapes.isEmpty()) {
             log.error("生成剪裁小图随机形状异常！");
             return resultMap;
         }
@@ -150,7 +147,7 @@ public class CaptchaUtil {
         // 拼接放入redis的key
         host = UtilString.join(host, CaptchaConst.MIDDLE_LINE, CaptchaConst.CAPTCHA);
 
-        InputStream sourceInput=Resources.getResourceAsStream(sourceImageName);
+        InputStream sourceInput = Resources.getResourceAsStream(sourceImageName);
         String sourcePngBase64 = getBase64FromInputStream(sourceInput);
         CacheManagerHolder.getManager().getCache(CaptchaConst.CACHE_CAPTCHA_IMG).put(UtilString.join(sourceSize, PIC_SUFFIX), sourcePngBase64);
 
@@ -193,9 +190,6 @@ public class CaptchaUtil {
     private String createBigImg(BufferedImage sourceImageBuffer, String sourceName) throws IOException {
         //创建一个灰度化图层， 将生成的小图，覆盖到该图层，使其灰度化，用于作为一个水印图
         String bigImgName = randomImgName("big_source_");
-        //如果大图不存在，那么就创建
-//        File bigfile = new File(imgPath + File.separator + bigImgName);
-//        if (!bigfile.exists()) {
         //将灰度化之后的图片，整合到原有图片上
         BufferedImage bigImg = addWatermark(sourceName, sourceImageBuffer, 0.6F);
         // 转is流
@@ -212,7 +206,6 @@ public class CaptchaUtil {
         }
         //存入redis
         CacheManagerHolder.getManager().getCache(CaptchaConst.CACHE_CAPTCHA_IMG).put(bigImgName, bigPngBase64);
-//        }
         return bigImgName;
     }
 
@@ -253,8 +246,10 @@ public class CaptchaUtil {
      */
     private List<Shape> createSmallShape() {
         //处理小图，在4个方向上 随机找到2个方向添加凸出
-        int face1 = RandomUtils.nextInt(3); //凸出1
-        int face2; //凸出2
+        //凸出1
+        int face1 = RandomUtils.nextInt(3);
+        //凸出2
+        int face2;
         //使凸出1 与 凸出2不在同一个方向
         while (true) {
             face2 = RandomUtils.nextInt(3);
@@ -310,10 +305,11 @@ public class CaptchaUtil {
             param.setSourceRegion(rect);
             tailoringImageBuffer = render.read(0, param);
         } finally {
-            if (in != null) {
-                in.close();
-            }
+
             try {
+                if (in != null) {
+                    in.close();
+                }
                 sourceInputStream.close();
             } catch (Exception e) {
                 e.printStackTrace();
