@@ -7,8 +7,10 @@ import com.example.demo.util.UtilString;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.cache.Cache;
+import org.springframework.cache.CacheManager;
 import org.springframework.stereotype.Service;
 
+import java.util.Objects;
 import java.util.UUID;
 
 /**
@@ -48,10 +50,11 @@ public class AutzQueryServiceImpl implements AutzQueryService {
     public Integer getCurrentIdCaptcha(String host) {
         String verificationCode = null;
         // 先去取cache块
-        Cache cache = CacheManagerHolder.getManager().getCache(CaptchaConst.VERIFICATION_CODE);
+        Cache cache = CacheManagerHolder.getManager().getCache(CaptchaConst.CACHE_CAPTCHA_IMG);
         if (cache != null) {
             // 再取当前IP
-            Cache.ValueWrapper wrapper = cache.get(UtilString.join(host,CaptchaConst.MIDDLE_LINE,CaptchaConst.CAPTCHA));
+//            Cache.ValueWrapper wrapper = cache.get(UtilString.join(host,CaptchaConst.MIDDLE_LINE,CaptchaConst.CAPTCHA));
+            Cache.ValueWrapper wrapper = cache.get(host);
             if (wrapper != null) {
                 // 有值就返回出去
                 verificationCode = wrapper.get().toString();
@@ -73,8 +76,13 @@ public class AutzQueryServiceImpl implements AutzQueryService {
         String veriCode="";
         if (UtilString.isNotEmpty(host)){
             String code= UUID.randomUUID().toString().replaceAll("-","").substring(0,6);
-//            String code= VerificationCodeUtils.getRandomCode();
-            CacheManagerHolder.getManager().getCache(CaptchaConst.VERIFICATION_CODE).put(host, code);
+            CacheManager manager = CacheManagerHolder.getManager();
+            if (Objects.nonNull(manager)) {
+                Cache cache = manager.getCache(CaptchaConst.VERIFICATION_CODE);
+                if (Objects.nonNull(cache)) {
+                    cache.put(host, code);
+                }
+            }
             veriCode=code;
         }
         return veriCode;

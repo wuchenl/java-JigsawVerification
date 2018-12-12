@@ -8,6 +8,8 @@ import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.math.RandomUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.cache.Cache;
+import org.springframework.cache.CacheManager;
 
 import javax.imageio.ImageIO;
 import javax.imageio.ImageReadParam;
@@ -79,14 +81,21 @@ public class CaptchaUtil {
      */
     private int locationY = 0;
 
-    public Map<String, String> createCaptchaImage(String host, int size, String sourcePath) throws IOException {
+    /**
+     * 根据传入的文件流以及文件名，生成对应的验证码模块以及对应的缓存获取key
+     *
+     * @param host            请求ip地址
+     * @param sourceImageName 请求对应的原图
+     * @param imageData       原文件图片对应的数组
+     * @return 对应的相关存取key
+     * @throws IOException
+     */
+    public Map<String, String> createCaptchaImage(String host, String sourceImageName, byte[] imageData) throws IOException {
+        String sourceName = sourceImageName.substring(sourceImageName.lastIndexOf("/")+1);
         Map<String, String> resultMap = Maps.newConcurrentMap();
-        Random random = new Random();
         log.info("开始创建滑动验证码相关图片----请求地址为:{}", host);
         // 获取原始图片的完整路径，随机采用一张
-        int sourceSize = random.nextInt(size);
-        String sourceImageName = UtilString.join(sourcePath, sourceSize, PIC_SUFFIX);
-        InputStream sourceImageInputStream = Resources.getResourceAsStream(sourceImageName);
+        InputStream sourceImageInputStream = UtilFile.byte2Input(imageData);
         if (Objects.isNull(sourceImageInputStream)) {
             log.warn("读取原始图片异常:{}", sourceImageName);
             return resultMap;
@@ -101,11 +110,11 @@ public class CaptchaUtil {
             return resultMap;
         }
         // 这里是控制剪裁图片生成的区域。尽量位于中间。同时。图片大于100*50
-
+        Random random = new Random();
         this.locationX = random.nextInt(width - tailoringWidth * 2) + tailoringWidth;
         this.locationY = random.nextInt(height - tailoringHeight);
         // 获取裁剪小图
-        BufferedImage tailoringImageBuffer = tailoringImage(sourceImageName);
+        BufferedImage tailoringImageBuffer = tailoringImage(imageData);
 
         //创建shape区域
         List<Shape> shapes = createSmallShape();
@@ -142,21 +151,36 @@ public class CaptchaUtil {
         resultMap.put("smallImgName", smallFileName);
         resultMap.put("bigImgName", bigImgName);
         resultMap.put("location_y", String.valueOf(locationY));
-        resultMap.put("sourceImgName", UtilString.join(sourceSize, PIC_SUFFIX));
+        resultMap.put("sourceImgName", sourceName);
 
         // 拼接放入redis的key
-        host = UtilString.join(host, CaptchaConst.MIDDLE_LINE, CaptchaConst.CAPTCHA);
+//        host = UtilString.join(host, CaptchaConst.MIDDLE_LINE, CaptchaConst.CAPTCHA);
 
-        InputStream sourceInput = Resources.getResourceAsStream(sourceImageName);
+        InputStream sourceInput = UtilFile.byte2Input(imageData);
         String sourcePngBase64 = getBase64FromInputStream(sourceInput);
-        CacheManagerHolder.getManager().getCache(CaptchaConst.CACHE_CAPTCHA_IMG).put(UtilString.join(sourceSize, PIC_SUFFIX), sourcePngBase64);
-
+        boolean cacheFlag;
+        cacheFlag = putDataToCache(CaptchaConst.CACHE_CAPTCHA_IMG, sourceName, sourcePngBase64);
+        if (!cacheFlag) {
+            log.error("加载原始图片进缓存异常！");
+            return null;
+        }
+        String point=String.valueOf(locationX);
         //将x 轴位置作为验证码 放入到redis中，key为IP-captcha
-        CacheManagerHolder.getManager().getCache(CaptchaConst.VERIFICATION_CODE).put(host, locationX);
-
+        cacheFlag = putDataToCache(CaptchaConst.CACHE_CAPTCHA_IMG, host, point);
+        if (!cacheFlag) {
+            log.error("加载验证图片偏移量进缓存异常！");
+            return null;
+        }
         return resultMap;
     }
 
+
+    /**
+     * 创建小图
+     *
+     * @param resultImgBuff
+     * @return
+     */
     private String createSmallImg(BufferedImage resultImgBuff) {
         String smallFileName = randomImgName("small_source_");
 
@@ -174,7 +198,11 @@ public class CaptchaUtil {
         }
         // 最后放入cache
         log.info("即将存入Cache:{}", smallFileName);
-        CacheManagerHolder.getManager().getCache(CaptchaConst.CACHE_CAPTCHA_IMG).put(smallFileName, smallPngBase64);
+        boolean cacheFlag = putDataToCache(CaptchaConst.CACHE_CAPTCHA_IMG, smallFileName, smallPngBase64);
+        if (!cacheFlag) {
+            log.error("加载小图进缓存异常！");
+            return null;
+        }
         return smallFileName;
     }
 
@@ -205,7 +233,11 @@ public class CaptchaUtil {
             return null;
         }
         //存入redis
-        CacheManagerHolder.getManager().getCache(CaptchaConst.CACHE_CAPTCHA_IMG).put(bigImgName, bigPngBase64);
+        boolean cacheFlag = putDataToCache(CaptchaConst.CACHE_CAPTCHA_IMG, bigImgName, bigPngBase64);
+        if (!cacheFlag) {
+            log.error("加载大图进缓存异常！");
+            return null;
+        }
         return bigImgName;
     }
 
@@ -288,15 +320,20 @@ public class CaptchaUtil {
     /**
      * 对图片进行裁剪
      *
-     * @param sourceImageName 剪裁前原始图片名称以及完整路径
+     * @param imageData 剪裁前原始图片流
      * @return 裁剪之后的图片Buffered
      * @throws IOException
      */
-    private BufferedImage tailoringImage(String sourceImageName) throws IOException {
+    private BufferedImage tailoringImage(byte[] imageData) throws IOException {
         Iterator iterator = ImageIO.getImageReadersByFormatName(PNG_SUFFIX);
         ImageReader render = (ImageReader) iterator.next();
-        InputStream sourceInputStream = Resources.getResourceAsStream(sourceImageName);
-        ImageInputStream in = ImageIO.createImageInputStream(sourceInputStream);
+        InputStream sourceInputStream = UtilFile.byte2Input(imageData);
+        if (Objects.isNull(sourceInputStream)) {
+            log.info("剪裁图片时获取原图文件流异常！");
+            throw new IOException("剪裁图片时获取原图文件流异常");
+        }
+        InputStream inputStream=UtilFile.byte2Input(imageData);
+        ImageInputStream in = ImageIO.createImageInputStream(inputStream);
         render.setInput(in, true);
         BufferedImage tailoringImageBuffer;
         try {
@@ -307,9 +344,8 @@ public class CaptchaUtil {
         } finally {
 
             try {
-                if (in != null) {
-                    in.close();
-                }
+                in.close();
+                inputStream.close();
                 sourceInputStream.close();
             } catch (Exception e) {
                 e.printStackTrace();
@@ -497,5 +533,28 @@ public class CaptchaUtil {
             log.error("BufferImage转InputStream异常：{}", e);
             return null;
         }
+    }
+
+
+    /**
+     * 放置数据进缓存
+     *
+     * @param cacheName 缓存块名称
+     * @param key       缓存的key
+     * @param value     值域
+     * @return 是否放置成功
+     */
+    private boolean putDataToCache(String cacheName, String key, Object value) {
+        boolean cacheFlag = false;
+        CacheManager manager = CacheManagerHolder.getManager();
+        if (Objects.nonNull(manager)) {
+            Cache cache = manager.getCache(cacheName);
+            if (Objects.nonNull(cache)) {
+                log.info("{}入缓存完成！",key);
+                cache.put(key, value);
+                cacheFlag = true;
+            }
+        }
+        return cacheFlag;
     }
 }

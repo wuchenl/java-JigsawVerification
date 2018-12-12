@@ -67,6 +67,7 @@ public class CacheManagerHolder {
 
         //
         sendFuture = scheduledExecutorService.scheduleWithFixedDelay(new Runnable() {
+            @Override
             public void run() {
                 // 收集统计信息
                 try {

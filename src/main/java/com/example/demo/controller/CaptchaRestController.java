@@ -4,9 +4,9 @@ import com.alibaba.fastjson.JSON;
 import com.example.demo.model.ResponseMessage;
 import com.example.demo.service.AutzQueryService;
 import com.example.demo.support.CaptchaConfig;
-import com.example.demo.util.CaptchaUtil;
-import com.example.demo.util.UtilString;
-import com.example.demo.util.UtilWeb;
+import com.example.demo.support.CaptchaConst;
+import com.example.demo.util.*;
+import com.google.common.primitives.Bytes;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -20,6 +20,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Random;
 
 /**
  * @author wuchen
@@ -34,18 +35,19 @@ public class CaptchaRestController {
     /**
      * 偏移量区间
      */
-    public static final int OFFSET=4;
+    public static final int OFFSET = 4;
     /**
      * 日志提供器
      * Modifiers should be declared in the correct order
      */
-    private static final  Logger log = LoggerFactory.getLogger(CaptchaRestController.class);
+    private static final Logger log = LoggerFactory.getLogger(CaptchaRestController.class);
 
     @Autowired
     private AutzQueryService autzQueryService;
 
     @Autowired(required = false)
     private CaptchaConfig captchaConfig;
+
     /**
      * 判断是否验证成功
      *
@@ -79,10 +81,20 @@ public class CaptchaRestController {
     @PostMapping("/captchaImage")
     @ResponseBody
     public String captchaImage(HttpServletRequest request) throws IOException {
-        CaptchaUtil resUtil=new CaptchaUtil();
-        String currentId=UtilWeb.getIpAddr(request);
+        CaptchaUtil resUtil = new CaptchaUtil();
+        String hostIp = UtilWeb.getIpAddr(request);
+        byte[] imageData = new byte[0];
+
+        // 获取验证码原图
+        String sourceImageName = getSourceImageName(hostIp);
+
+        // 获取对应的流
+        InputStream sourceImageInputStream = getSourceImageInputStream(sourceImageName);
+        if (Objects.nonNull(sourceImageInputStream)) {
+            imageData = UtilFile.input2byte(sourceImageInputStream);
+        }
         // 读取文件
-        Map<String, String> result = resUtil.createCaptchaImage(currentId,captchaConfig.getSize(),captchaConfig.getPath());
+        Map<String, String> result = resUtil.createCaptchaImage(hostIp, sourceImageName, imageData);
         if (result.size() > 0) {
             return JSON.toJSONString(result);
         } else {
@@ -91,10 +103,30 @@ public class CaptchaRestController {
 
     }
 
+    private String getSourceImageName(String hostIp) {
+        Random random = new Random();
+        log.info("开始创建滑动验证码相关图片----请求地址为:{}", hostIp);
+        // 获取原始图片的完整路径，随机采用一张
+        int sourceSize = random.nextInt(captchaConfig.getSize());
+        return UtilString.join(captchaConfig.getPath(), sourceSize, CaptchaConst.PIC_SUFFIX);
+    }
+
+    /**
+     * 根据原图文件路径去获取对应的文件流
+     *
+     * @param sourceImageName 原图名
+     * @return 文件流
+     * @throws IOException
+     */
+    private InputStream getSourceImageInputStream(String sourceImageName) throws IOException {
+        return Resources.getResourceAsStream(sourceImageName);
+    }
+
     /**
      * 从缓存中去加载某些图片
+     *
      * @param imageName 图片名
-     * @param response 从缓存中获取的图片
+     * @param response  从缓存中获取的图片
      */
     @GetMapping("/image/{imageName:.+}")
     public void getImage(@PathVariable String imageName, HttpServletResponse response) {

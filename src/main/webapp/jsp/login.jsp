@@ -99,7 +99,7 @@
         $.ajax({
             type: "POST",
             async: true,
-            url: "captcha/captchaImage?imgname=" + $(".yzm_image_source").css("background-image"),
+            url: "captcha/captchaImage",
             dataType: 'json',
             success: function (result) {
                 if (result) {

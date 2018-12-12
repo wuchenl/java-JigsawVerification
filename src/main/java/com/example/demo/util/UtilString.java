@@ -5,6 +5,7 @@ import org.slf4j.helpers.FormattingTuple;
 import org.slf4j.helpers.MessageFormatter;
 
 import java.io.UnsupportedEncodingException;
+import java.net.URLEncoder;
 import java.util.Collection;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -457,6 +458,18 @@ public class UtilString extends org.apache.commons.lang3.StringUtils {
 	}
 
 
+	/**
+	 *
+	 * @param part
+	 * @return
+	 */
+	public static String urlEncode(String part){
+		try{
+			return URLEncoder.encode(part,CHARSET_NAME);
+		}catch (UnsupportedEncodingException e){
+			throw ExceptionHelper.unchecked(e);
+		}
+	}
 
 	private UtilString() {
 	}

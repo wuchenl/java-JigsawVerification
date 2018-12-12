@@ -26,4 +26,9 @@ public class CaptchaConst {
      * 图片的缓存集合名
      */
     public static final String CACHE_CAPTCHA_IMG="captchaImage";
+
+    /**
+     * 生成图片后缀
+     */
+    public static final String PIC_SUFFIX = ".png";
 }
