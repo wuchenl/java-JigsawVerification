@@ -197,7 +197,6 @@ public class CaptchaUtil {
             return null;
         }
         // 最后放入cache
-        log.info("即将存入Cache:{}", smallFileName);
         boolean cacheFlag = putDataToCache(CaptchaConst.CACHE_CAPTCHA_IMG, smallFileName, smallPngBase64);
         if (!cacheFlag) {
             log.error("加载小图进缓存异常！");
@@ -550,7 +549,7 @@ public class CaptchaUtil {
         if (Objects.nonNull(manager)) {
             Cache cache = manager.getCache(cacheName);
             if (Objects.nonNull(cache)) {
-                log.info("{}入缓存完成！",key);
+                log.info("即将放入缓存:{}",key);
                 cache.put(key, value);
                 cacheFlag = true;
             }

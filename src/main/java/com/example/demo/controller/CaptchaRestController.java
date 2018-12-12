@@ -7,6 +7,7 @@ import com.example.demo.support.CaptchaConfig;
 import com.example.demo.support.CaptchaConst;
 import com.example.demo.util.*;
 import com.google.common.primitives.Bytes;
+import lombok.NonNull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -55,8 +56,12 @@ public class CaptchaRestController {
      * @return 成功则返回验证码，失败则返回失败信息
      */
     @PostMapping("/checkCaptcha")
-    public ResponseMessage checkCaptcha(HttpServletRequest request) {
-        String point = request.getParameter("point");
+    public ResponseMessage checkCaptcha(HttpServletRequest request, @NonNull String point) {
+//        String point =point request.getParameter("point");
+        if (!UtilString.isNumber(point)){
+            log.warn("传入的偏移量为:{}",point);
+            return ResponseMessage.error("非法参数！");
+        }
         String host = UtilWeb.getIpAddr(request);
         Integer veriCode = autzQueryService.getCurrentIdCaptcha(host);
         if ((Integer.valueOf(point) < veriCode + OFFSET) && (Integer.valueOf(point) > veriCode - OFFSET)) {
@@ -105,7 +110,6 @@ public class CaptchaRestController {
 
     private String getSourceImageName(String hostIp) {
         Random random = new Random();
-        log.info("开始创建滑动验证码相关图片----请求地址为:{}", hostIp);
         // 获取原始图片的完整路径，随机采用一张
         int sourceSize = random.nextInt(captchaConfig.getSize());
         return UtilString.join(captchaConfig.getPath(), sourceSize, CaptchaConst.PIC_SUFFIX);
