@@ -21,12 +21,13 @@ import java.util.UUID;
 @Service
 public class AutzQueryServiceImpl implements AutzQueryService {
 
-    private final static Logger log= LoggerFactory.getLogger(AutzQueryServiceImpl.class);
+    private static final Logger log = LoggerFactory.getLogger(AutzQueryServiceImpl.class);
 
 
     /**
      * 获取当前IP验证码
      * sprint by itw_wangjb03：获取当前IP的验证码
+     *
      * @param host 当前IP
      * @return 验证码
      */
@@ -59,7 +60,7 @@ public class AutzQueryServiceImpl implements AutzQueryService {
                 verificationCode = wrapper.get().toString();
             }
         }
-        if (UtilString.isNotEmpty(verificationCode)){
+        if (UtilString.isNotEmpty(verificationCode)) {
             return Integer.parseInt(verificationCode);
         }
         return 0;
@@ -72,9 +73,9 @@ public class AutzQueryServiceImpl implements AutzQueryService {
      */
     @Override
     public String putCurrentIpCode(String host) {
-        String veriCode="";
-        if (UtilString.isNotEmpty(host)){
-            String code= UUID.randomUUID().toString().replaceAll("-","").substring(0,6);
+        String veriCode = "";
+        if (UtilString.isNotEmpty(host)) {
+            String code = UUID.randomUUID().toString().replaceAll("-", "").substring(0, 6);
             CacheManager manager = CacheManagerHolder.getManager();
             if (Objects.nonNull(manager)) {
                 Cache cache = manager.getCache(CaptchaConst.VERIFICATION_CODE);
@@ -82,7 +83,7 @@ public class AutzQueryServiceImpl implements AutzQueryService {
                     cache.put(host, code);
                 }
             }
-            veriCode=code;
+            veriCode = code;
         }
         return veriCode;
     }
@@ -102,7 +103,7 @@ public class AutzQueryServiceImpl implements AutzQueryService {
             // 再取当前IP
             Cache.ValueWrapper wrapper = cache.get(imageName);
             if (wrapper != null) {
-                log.info("验证码图片从缓存加载成功:{}",imageName);
+                log.info("验证码图片从缓存加载成功:{}", imageName);
                 // 有值就返回出去
                 base64Str = wrapper.get().toString();
             }
@@ -113,6 +114,7 @@ public class AutzQueryServiceImpl implements AutzQueryService {
     /**
      * 移除当前IP的验证码
      * sprint13 by itw_wangjb03：用于清除当前IP的验证码
+     *
      * @param host 当前IP
      */
     @Override

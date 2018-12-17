@@ -49,7 +49,7 @@ public class Resources {
      * @return The resource
      * @throws IOException If the resource cannot be found or read
      */
-    public static URL getResourceURL(String resource) throws IOException {
+    public static URL getResourceURL(String resource){
         return classLoaderWrapper.getResourceAsURL(resource);
     }
 

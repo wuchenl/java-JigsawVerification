@@ -61,21 +61,18 @@ public class CacheManagerHolder {
             cacheManager = new ConcurrentMapCacheManager();
         }
 
-        if (target == null && cacheManager != null){
+        if (target == null){
             target = cacheManager;
-            logger.info("系统选择了缓存-"+cacheManager.getClass());
+            logger.info("系统选择了缓存-{}",cacheManager.getClass());
         }
 
         //
-        sendFuture = scheduledExecutorService.scheduleWithFixedDelay(new Runnable() {
-            @Override
-            public void run() {
-                // 收集统计信息
-                try {
-                    send();
-                } catch (Throwable t) { // 防御性容错
-                    logger.error("Unexpected error occur at send statistic, cause: " + t.getMessage(), t);
-                }
+        sendFuture = scheduledExecutorService.scheduleWithFixedDelay(() -> {
+            // 收集统计信息
+            try {
+                send();
+            } catch (Throwable t) { // 防御性容错
+                logger.error("Unexpected error occur at send statistic, cause: " + t.getMessage(), t);
             }
         }, monitorInterval, monitorInterval, TimeUnit.MINUTES);
     }
@@ -85,7 +82,7 @@ public class CacheManagerHolder {
         logger.info("");
         cacheManager.getCacheNames().forEach(
                 cacheName -> {
-                    logger.info("["+cacheName + "]-------->"+cacheManager.getCache(cacheName).getClass());
+                    logger.info("["+cacheName + "]-------->{}",cacheManager.getCache(cacheName).getClass());
                 }
         );
         logger.info("");

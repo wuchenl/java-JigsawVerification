@@ -38,8 +38,7 @@ public class UtilWeb {
 	//web应用绝对路径
 	public static String getBasePath(HttpServletRequest request) {
 		String path = request.getContextPath();
-		String basePath = request.getScheme() + "://" + request.getServerName() + ":" + request.getServerPort() + path + "/";
-		return basePath;
+		return request.getScheme() + "://" + request.getServerName() + ":" + request.getServerPort() + path + "/";
 	}
 
 	public static Map<String, String> getParameters(HttpServletRequest request) {
@@ -108,10 +107,12 @@ public class UtilWeb {
 		} catch (IOException e) {
 			logger.error(e.getMessage());
 		}finally{
-			try {
-				reader.reset();
-			} catch (IOException e) {
-				logger.error(e.getMessage());
+			if (reader!=null){
+				try {
+					reader.reset();
+				} catch (IOException e) {
+					logger.error(e.getMessage());
+				}
 			}
 		}
 		return sb.toString();

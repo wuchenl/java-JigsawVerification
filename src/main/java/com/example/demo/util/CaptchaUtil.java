@@ -348,6 +348,7 @@ public class CaptchaUtil {
                 inputStream.close();
                 sourceInputStream.close();
             } catch (Exception e) {
+                log.error("关闭流出现异常{}",e);
                 e.printStackTrace();
             }
         }

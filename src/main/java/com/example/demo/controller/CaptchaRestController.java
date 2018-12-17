@@ -5,9 +5,7 @@ import com.example.demo.model.ResponseMessage;
 import com.example.demo.service.AutzQueryService;
 import com.example.demo.support.CaptchaConfig;
 import com.example.demo.support.CaptchaConst;
-import com.example.demo.support.cache.CacheManagerHolder;
 import com.example.demo.util.*;
-import com.google.common.primitives.Bytes;
 import lombok.NonNull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -58,7 +56,6 @@ public class CaptchaRestController {
      */
     @PostMapping("/checkCaptcha")
     public ResponseMessage checkCaptcha(HttpServletRequest request, @NonNull String point) {
-//        String point =point request.getParameter("point");
         if (!UtilString.isNumber(point)) {
             log.warn("传入的偏移量为:{}", point);
             return ResponseMessage.error("非法参数！");
@@ -92,7 +89,7 @@ public class CaptchaRestController {
         byte[] imageData = new byte[0];
 
         // 获取验证码原图
-        String sourceImageName = getSourceImageName(hostIp);
+        String sourceImageName = getSourceImageName();
         String pngName = sourceImageName.substring(sourceImageName.lastIndexOf("/") + 1);
         String pngBaseStr = autzQueryService.getCaptchaImageBase64Str(pngName);
         InputStream sourceImageInputStream = null;
@@ -119,7 +116,7 @@ public class CaptchaRestController {
 
     }
 
-    private String getSourceImageName(String hostIp) {
+    private String getSourceImageName() {
         Random random = new Random();
         // 获取原始图片的完整路径，随机采用一张
         int sourceSize = random.nextInt(captchaConfig.getSize());

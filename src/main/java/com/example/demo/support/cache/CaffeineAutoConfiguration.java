@@ -1,7 +1,6 @@
 package com.example.demo.support.cache;
 
 import com.github.benmanes.caffeine.cache.Caffeine;
-import com.google.common.cache.CacheBuilder;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
@@ -12,7 +11,6 @@ import org.springframework.cache.caffeine.CaffeineCache;
 import org.springframework.cache.support.SimpleCacheManager;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
-import org.springframework.context.annotation.Conditional;
 import org.springframework.context.annotation.Configuration;
 
 import java.util.ArrayList;
@@ -37,7 +35,7 @@ public class CaffeineAutoConfiguration extends CachingConfigurerSupport {
     public CacheManager caffeineCacheManager(CacheConfig cacheConfig) {
 
         SimpleCacheManager simpleCacheManager = new SimpleCacheManager();
-        ArrayList<CaffeineCache> caches = new ArrayList<CaffeineCache>();
+        ArrayList<CaffeineCache> caches = new ArrayList<>();
         Map<String, Long> cacheNames = cacheConfig.getCacheNames();
         Iterator<String> cacheNameIter = cacheNames.keySet().iterator();
         while (cacheNameIter.hasNext()) {
