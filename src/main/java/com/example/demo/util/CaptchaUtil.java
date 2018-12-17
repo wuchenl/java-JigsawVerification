@@ -1,6 +1,7 @@
 package com.example.demo.util;
 
 import com.example.demo.support.CaptchaConst;
+import com.example.demo.support.cache.CacheManagerHolder;
 import com.google.common.collect.Maps;
 import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.codec.digest.DigestUtils;
@@ -166,7 +167,7 @@ public class CaptchaUtil {
         }
         String point=String.valueOf(locationX);
         //将x 轴位置作为验证码 放入到redis中，key为IP-captcha
-        cacheFlag = putDataToCache(CaptchaConst.CACHE_CAPTCHA_IMG, host, point);
+        cacheFlag = putDataToCache(CaptchaConst.VERIFICATION_CODE, host, point);
         if (!cacheFlag) {
             log.error("加载验证图片偏移量进缓存异常！");
             return null;

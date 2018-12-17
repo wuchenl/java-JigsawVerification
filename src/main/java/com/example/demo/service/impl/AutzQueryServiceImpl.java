@@ -2,7 +2,7 @@ package com.example.demo.service.impl;
 
 import com.example.demo.service.AutzQueryService;
 import com.example.demo.support.CaptchaConst;
-import com.example.demo.util.CacheManagerHolder;
+import com.example.demo.support.cache.CacheManagerHolder;
 import com.example.demo.util.UtilString;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -50,10 +50,9 @@ public class AutzQueryServiceImpl implements AutzQueryService {
     public Integer getCurrentIdCaptcha(String host) {
         String verificationCode = null;
         // 先去取cache块
-        Cache cache = CacheManagerHolder.getManager().getCache(CaptchaConst.CACHE_CAPTCHA_IMG);
+        Cache cache = CacheManagerHolder.getManager().getCache(CaptchaConst.VERIFICATION_CODE);
         if (cache != null) {
             // 再取当前IP
-//            Cache.ValueWrapper wrapper = cache.get(UtilString.join(host,CaptchaConst.MIDDLE_LINE,CaptchaConst.CAPTCHA));
             Cache.ValueWrapper wrapper = cache.get(host);
             if (wrapper != null) {
                 // 有值就返回出去

@@ -1,6 +1,7 @@
-package com.example.demo.util;
+package com.example.demo.support.cache;
 
 
+import com.example.demo.util.NamedThreadFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;

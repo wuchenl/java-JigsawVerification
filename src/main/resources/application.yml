@@ -7,6 +7,12 @@ spring:
     view:
       prefix: /jsp/
       suffix: .jsp
+  cache:
+    type: caffeine
+    cacheNames:
+      verificationCode: 600
+#     生成的图片缓存时间 30S，图片生成完以后就会立刻会消费掉 30S周期已经够长。或者考虑改为使用后即移除。
+      captchaImage: 30
 com:
   letters7:
     wuchen:

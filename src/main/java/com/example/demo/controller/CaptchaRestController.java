@@ -5,6 +5,7 @@ import com.example.demo.model.ResponseMessage;
 import com.example.demo.service.AutzQueryService;
 import com.example.demo.support.CaptchaConfig;
 import com.example.demo.support.CaptchaConst;
+import com.example.demo.support.cache.CacheManagerHolder;
 import com.example.demo.util.*;
 import com.google.common.primitives.Bytes;
 import lombok.NonNull;
@@ -58,8 +59,8 @@ public class CaptchaRestController {
     @PostMapping("/checkCaptcha")
     public ResponseMessage checkCaptcha(HttpServletRequest request, @NonNull String point) {
 //        String point =point request.getParameter("point");
-        if (!UtilString.isNumber(point)){
-            log.warn("传入的偏移量为:{}",point);
+        if (!UtilString.isNumber(point)) {
+            log.warn("传入的偏移量为:{}", point);
             return ResponseMessage.error("非法参数！");
         }
         String host = UtilWeb.getIpAddr(request);
@@ -92,11 +93,21 @@ public class CaptchaRestController {
 
         // 获取验证码原图
         String sourceImageName = getSourceImageName(hostIp);
-
-        // 获取对应的流
-        InputStream sourceImageInputStream = getSourceImageInputStream(sourceImageName);
+        String pngName = sourceImageName.substring(sourceImageName.lastIndexOf("/") + 1);
+        String pngBaseStr = autzQueryService.getCaptchaImageBase64Str(pngName);
+        InputStream sourceImageInputStream = null;
+        if (UtilString.isNotEmpty(pngBaseStr)) {
+            log.info("从缓存加载了原文件:{}", pngName);
+            sourceImageInputStream = CaptchaUtil.getInputStreamFromBase64Str(pngBaseStr);
+        } else {
+            // 获取对应的流
+            sourceImageInputStream = getSourceImageInputStream(sourceImageName);
+        }
         if (Objects.nonNull(sourceImageInputStream)) {
             imageData = UtilFile.input2byte(sourceImageInputStream);
+        }else {
+            log.error("读取原文件异常！");
+            return null;
         }
         // 读取文件
         Map<String, String> result = resUtil.createCaptchaImage(hostIp, sourceImageName, imageData);

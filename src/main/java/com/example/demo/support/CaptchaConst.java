@@ -20,7 +20,7 @@ public class CaptchaConst {
     /**
      * 缓存中的集合名
      */
-    public static final String VERIFICATION_CODE="verification_code";
+    public static final String VERIFICATION_CODE="verificationCode";
 
     /**
      * 图片的缓存集合名
