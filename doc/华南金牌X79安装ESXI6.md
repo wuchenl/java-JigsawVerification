@@ -31,7 +31,7 @@ CPU：E5-2690V2  1300
 6.下载个大白菜等PE工具。制作一个启动盘。把制作好的ISO文件丢进对应的ISO目录。
 ```
 ###ESXi-Customizer-v2.7.2删除系统校验(win7以上系统需要此操作)
-删除ESXi-Customizer.cmd文件中200多行的下述内容即可。
+    删除ESXi-Customizer.cmd文件中200多行的下述内容即可。
 ```
    if /I not "%1"=="silent" call :logCons Checking Windows version ...
    for /F "tokens=3,4,5 delims=. " %%a in ('ver') do (
@@ -53,7 +53,7 @@ CPU：E5-2690V2  1300
 ```
 
 ##安装
-这个时候，我们应该已经有了一个配置无问题的2011平台PC一台。以及一个做好了引导，且有我们改后ISO包的启动盘。
+    这个时候，我们应该已经有了一个配置无问题的2011平台PC一台。以及一个做好了引导，且有我们改后ISO包的启动盘。
 ```
 1.开机点击DEL键，进入BIOS。
 2.右移进入BOOT选项，下方有对应的启动顺序选择。
