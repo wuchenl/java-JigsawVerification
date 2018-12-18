@@ -35,7 +35,7 @@ public class CaptchaRestController {
     /**
      * 偏移量区间
      */
-    public static final int OFFSET = 4;
+    private static final int OFFSET = 4;
     /**
      * 日志提供器
      * Modifiers should be declared in the correct order
@@ -78,21 +78,21 @@ public class CaptchaRestController {
      * 生成图片
      *
      * @param request 请求
-     * @return
-     * @throws IOException
+     * @return 返回图片及其对应请求地址
+     * @throws IOException 丢出异常
      */
     @PostMapping("/captchaImage")
     @ResponseBody
     public String captchaImage(HttpServletRequest request) throws IOException {
         CaptchaUtil resUtil = new CaptchaUtil();
         String hostIp = UtilWeb.getIpAddr(request);
-        byte[] imageData = new byte[0];
+        byte[] imageData ;
 
         // 获取验证码原图
         String sourceImageName = getSourceImageName();
         String pngName = sourceImageName.substring(sourceImageName.lastIndexOf("/") + 1);
         String pngBaseStr = autzQueryService.getCaptchaImageBase64Str(pngName);
-        InputStream sourceImageInputStream = null;
+        InputStream sourceImageInputStream;
         if (UtilString.isNotEmpty(pngBaseStr)) {
             log.info("从缓存加载了原文件:{}", pngName);
             sourceImageInputStream = CaptchaUtil.getInputStreamFromBase64Str(pngBaseStr);
@@ -128,7 +128,7 @@ public class CaptchaRestController {
      *
      * @param sourceImageName 原图名
      * @return 文件流
-     * @throws IOException
+     * @throws IOException 异常
      */
     private InputStream getSourceImageInputStream(String sourceImageName) throws IOException {
         return Resources.getResourceAsStream(sourceImageName);

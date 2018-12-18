@@ -90,7 +90,7 @@
         </dependency>
         <!--IO包-->
         <dependency>
-            <groupId>org.apache.commons</groupId>
+            <groupId>commons-io</groupId>
             <artifactId>commons-io</artifactId>
             <version>1.3.2</version>
         </dependency>
@@ -121,33 +121,79 @@
     </dependencies>
 
     <build>
-        <finalName>demo</finalName>
+        <finalName>${project.artifactId}</finalName>
+        <resources>
+            <!-- 打包时将jsp文件拷贝到META-INF目录下-->
+            <resource>
+                <!-- 指定resources插件处理哪个目录下的资源文件 -->
+                <directory>src/main/webapp</directory>
+                <!--注意此次必须要放在此目录下才能被访问到-->
+                <targetPath>META-INF/resources</targetPath>
+                <includes>
+                    <include>**/**</include>
+                </includes>
+            </resource>
+            <resource>
+                <directory>src/main/resources</directory>
+                <includes>
+                    <include>**/**</include>
+                </includes>
+                <filtering>false</filtering>
+            </resource>
+            <resource>
+                <directory>src/main/java</directory>
+                <includes>
+                    <include>**/**</include>
+                </includes>
+                <filtering>false</filtering>
+            </resource>
+        </resources>
         <plugins>
-
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-compiler-plugin</artifactId>
+                <version>3.1</version>
+                <configuration>
+                    <source>${java.version}</source>
+                    <target>${java.version}</target>
+                    <encoding>${project.build.sourceEncoding}</encoding>
+                </configuration>
+            </plugin>
+            <!--跳过测试-->
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-surefire-plugin</artifactId>
                 <configuration>
-                    <skip>true</skip>
+                     <skip>true</skip>
                 </configuration>
             </plugin>
-
+            <!--spring-boot插件,有了它才能执行 mvn spring-boot:run命令，以及mvn package 打可运行jar包-->
             <plugin>
                 <groupId>org.springframework.boot</groupId>
                 <artifactId>spring-boot-maven-plugin</artifactId>
+                <version>1.3.7.RELEASE</version>
+                <configuration>
+                    <mainClass>com.example.demo.DemoApplication</mainClass>
+                    <fork>true</fork>
+                </configuration>
                 <executions>
                     <execution>
                         <goals>
                             <goal>repackage</goal>
                         </goals>
-                        <configuration>
-                            <classifier>exec</classifier>
-                        </configuration>
                     </execution>
                 </executions>
             </plugin>
+            <!--解决：spring boot 打包为war包报错：提示缺少web.xml-->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-war-plugin</artifactId>
+                <version>2.6</version>
+                <configuration>
+                    <failOnMissingWebXml>false</failOnMissingWebXml>
+                </configuration>
+            </plugin>
         </plugins>
-
     </build>
 
 
